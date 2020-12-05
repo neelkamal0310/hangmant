@@ -9,12 +9,23 @@ os.system("clear")
 # Find the number of columns in the terminal. The game centres itself
 # in the given number of columns.
 if os.name == 'posix':
-    cols = int(os.popen("stty size", "r").read().split()[1])
+    COLS = int(os.popen("stty size", "r").read().split()[1])
+    COLOR = True
 else:
-    cols = 0
+    COLS = 0
+    COLOR = False
 
-# List of hangman strings
-hangman = [
+# ANSI color codes
+CRED = 31
+CGREEN = 32
+CYELLOW = 33
+CBLUE = 34
+CMAGENTA = 35
+CCYAN = 36
+CNONE = 0
+
+# List of HANGMAN strings
+HANGMAN = [
     """
 _____
 |
@@ -89,23 +100,40 @@ _____
     """,
 ]
 
+HANG_COLS = [ CGREEN, CGREEN, CGREEN, CYELLOW, CYELLOW, CYELLOW, CRED, CRED ]
+
+
+# Function to set colors
+def set_col(col, bold=False):
+    if COLOR:
+        if bold:
+            print(f"\033[{col};1m", end="")
+        else:
+            print(f"\033[{col}m", end="")
+    else:
+        pass
+
 
 # Print the title of tha game
 def show_title():
     print()
+    set_col(CBLUE, bold=True)
     title_string = "HANGMAN - Guess the word"
-    print(f"{title_string:^{cols}}")
-    print(f"{'-'*len(title_string):^{cols}}")
+    print(f"{title_string:^{COLS}}")
+    print(f"{'-'*len(title_string):^{COLS}}")
+    set_col(CNONE)
     print()
 
 
 # Determine and show the correct status depending on the
 # number of wrong letters aligned to center of the screen
-def show_hangman(wrong_letters, cols):
-    temp = hangman[wrong_letters].lstrip().split('\n')
-    spaces = cols//2 - len(temp[0])//2
+def show_hangman(wrong_letters, COLS):
+    temp = HANGMAN[wrong_letters].lstrip().split('\n')
+    spaces = COLS//2 - len(temp[0])//2
+    set_col(HANG_COLS[wrong_letters])
     for i in temp:
         print(' '*spaces, i, sep="")
+    set_col(CNONE)
 
 
 # Function to show the game over screen
@@ -113,9 +141,13 @@ def show_game_over(dashed_string, word, wrong_letters):
     os.system("clear")
     show_title()
     temp = ' '.join(dashed_string) + " ==> " + word
-    print(f"{temp:^{cols}}")
-    show_hangman(wrong_letters, cols)
-    print(f"{'YOU LOSE!! Try again.':^{cols}}\n\n")
+    set_col(CRED, bold=True)
+    print(f"{temp:^{COLS}}")
+    set_col(CNONE)
+    show_hangman(wrong_letters, COLS)
+    set_col(CRED, bold=True)
+    print(f"{'YOU LOSE!!':^{COLS}}\n\n")
+    set_col(CNONE)
 
 
 # Function to show the winning screen
@@ -123,9 +155,13 @@ def show_win(dashed_string, wrong_letters):
     os.system("clear")
     show_title()
     temp = ' '.join(dashed_string)
-    print(f"{temp:^{cols}}")
-    show_hangman(wrong_letters, cols)
-    print(f"{'CONGRATULATIONS!! YOU WIN':^{cols}}\n\n")
+    set_col(CGREEN, bold=True)
+    print(f"{temp:^{COLS}}")
+    set_col(CNONE)
+    show_hangman(wrong_letters, COLS)
+    set_col(CGREEN, bold=True)
+    print(f"{'CONGRATULATIONS!! YOU WIN':^{COLS}}\n\n")
+    set_col(CNONE)
 
 
 # Get the list of words from the word_list file
@@ -133,10 +169,10 @@ words_list = open('./words', 'r').read().strip().split('\n')
 
 # Display the words to the plater for a few seconds
 show_title()
-print(f"{'Have a look at the words.':^{cols}}")
-print(f"{'You have 5 seconds.':^{cols}}\n")
+print(f"{'Have a look at the words.':^{COLS}}")
+print(f"{'You have 5 seconds.':^{COLS}}\n")
 for i in words_list:
-    print(f"{i:^{cols}}")
+    print(f"{i:^{COLS}}")
 time.sleep(5)
 
 again = True
@@ -164,20 +200,25 @@ while again:
 
         show_title()
         temp = ' '.join(dashed_string)
-        print(f"{temp:^{cols}}")
-        show_hangman(wrong_letters, cols)
-        print(f"{'Letters already used':^{cols}}")
+        set_col(HANG_COLS[wrong_letters], bold=True)
+        print(f"{temp:^{COLS}}")
+        show_hangman(wrong_letters, COLS)
+        set_col(HANG_COLS[wrong_letters])
+        print(f"{'Letters already used':^{COLS}}")
         temp = ' '.join(letters_entered)
-        print(f'{temp:^{cols}}\n')
+        print(f'{temp:^{COLS}}\n')
+        set_col(CNONE)
 
         # If there are no letters entered pick up a random letter
         if len(letters_entered) == 0:
             letter = random.choice(list(set(word)))
         else:
             input_string = "Enter a letter: "
-            print(f"{input_string:>{cols//2+len(input_string)//2}}",
+            set_col(CBLUE)
+            print(f"{input_string:>{COLS//2+len(input_string)//2}}",
                   end='', flush=True)
             letter = getche()
+            set_col(CNONE)
 
         # Check if the entered letter is a whitespace or newline
         # If not checked whitespaces and enter count as characters and
@@ -205,8 +246,10 @@ while again:
 
     # Ask the user if the user wants to play again
     prompt_string = "Play again?(y/n)"
-    print(f"{prompt_string:>{cols//2+len(prompt_string)//2}}",
+    set_col(CGREEN, bold=True)
+    print(f"{prompt_string:>{COLS//2+len(prompt_string)//2}}",
           end='', flush=True)
+    set_col(CNONE)
     try_again = getche()
     print()
 
