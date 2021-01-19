@@ -12,7 +12,7 @@ if os.name == 'posix':
     COLS = int(os.popen("stty size", "r").read().split()[1])
     COLOR = True
 else:
-    COLS = 0
+    COLS = 80
     COLOR = False
 
 # ANSI color codes
