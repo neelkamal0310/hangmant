@@ -1,5 +1,6 @@
 # Hangmant
 
+![screenshot](img/image1.gif)
 A terminal based hangman game
 
 ## Requirements
